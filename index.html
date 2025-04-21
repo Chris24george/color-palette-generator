@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding: 1rem;
+        }
+        @media (min-width: 640px) {
+            body {
+                padding: 2rem;
+            }
+        }
+        .color-swatch span {
+            mix-blend-mode: difference;
+            filter: invert(1) grayscale(1) contrast(100);
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            display: inline-block;
+        }
+        @media (min-width: 640px) {
+            .color-swatch span {
+                font-size: 0.875rem;
+            }
+        }
+        .saved-palette-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: background-color 0.15s ease-in-out;
+        }
+        .saved-palette-item:hover {
+            background-color: #f3f4f6;
+        }
+        .saved-color-unit {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.15s ease-in-out;
+        }
+         .saved-color-unit:hover {
+             background-color: #e5e7eb;
+         }
+        .saved-swatch {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .saved-hex-code {
+             font-family: monospace;
+             font-size: 0.8rem;
+             color: #4b5563;
+        }
+        #notification {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        button {
+             transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #base-color-input {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        #base-color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        #base-color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 0.375rem;
+        }
+         #base-color-input::-moz-color-swatch {
+            border: none;
+            border-radius: 0.375rem;
+        }
+    </style>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-xl w-full max-w-3xl mx-auto">
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-4 sm:mb-6">Color Palette Generator</h1>
+
+        <div id="palette-container" class="flex justify-center items-stretch mb-4 sm:mb-6 h-36 sm:h-48 md:h-64 rounded-md overflow-hidden shadow-inner bg-gray-50">
+        </div>
+
+        <div class="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <button id="generate-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 text-sm sm:text-base">
+                    🎲 Generate Random
+                </button>
+                <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 text-sm sm:text-base">
+                    💾 Save Palette
+                </button>
+            </div>
+
+            <div class="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-3 sm:space-y-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Advanced Options</h3>
+                
+                <div class="flex flex-col gap-2">
+                    <label for="harmony-select" class="text-sm font-medium text-gray-600">Color Harmony</label>
+                    <select id="harmony-select" class="w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm">
+                        <option value="analogous">Analogous</option>
+                        <option value="monochromatic">Monochromatic</option>
+                        <option value="complementary">Complementary</option>
+                        <option value="split-complementary">Split Complementary</option>
+                        <option value="triadic">Triadic</option>
+                        <option value="random">Random (Any Hue)</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label for="base-color-input" class="text-sm font-medium text-gray-600">Base Color</label>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-none">
+                            <input type="color" id="base-color-input" value="#4A90E2" title="Choose base color" class="w-12 h-12 rounded-md cursor-pointer">
+                        </div>
+                        <button id="generate-from-base-btn" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75 text-sm">
+                            Generate from Base Color
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="notification" class="fixed top-4 right-4 sm:top-5 sm:right-5 bg-gray-800 text-white px-3 py-2 sm:px-4 sm:py-2 text-sm rounded-lg shadow-md opacity-0 transform translate-y-2 pointer-events-none z-50">
+            Copied!
+        </div>
+
+        <div class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+            <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-3 sm:mb-4 text-center">Saved Palettes</h2>
+            <div id="saved-palettes-container" class="space-y-2 sm:space-y-3 max-h-48 sm:max-h-60 overflow-y-auto pr-2">
+                <p id="no-saved-palettes" class="text-gray-500 text-center italic text-sm sm:text-base">No palettes saved yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const paletteContainer = document.getElementById('palette-container');
+        const generateBtn = document.getElementById('generate-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const savedPalettesContainer = document.getElementById('saved-palettes-container');
+        const noSavedPalettesMsg = document.getElementById('no-saved-palettes');
+        const notification = document.getElementById('notification');
+        const baseColorInput = document.getElementById('base-color-input');
+        const generateFromBaseBtn = document.getElementById('generate-from-base-btn');
+        const harmonySelect = document.getElementById('harmony-select');
+
+        let currentPalette = [];
+
+        function hslToRgb(h, s, l) {
+             let r, g, b;
+            if (s == 0) { r = g = b = l; } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1; if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1 / 3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1 / 3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+         }
+        function rgbToHsl(r, g, b) {
+            r /= 255, g /= 255, b /= 255; const max = Math.max(r, g, b), min = Math.min(r, g, b); let h, s, l = (max + min) / 2;
+            if (max == min) { h = s = 0; } else {
+                const d = max - min; s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) { case r: h = (g - b) / d + (g < b ? 6 : 0); break; case g: h = (b - r) / d + 2; break; case b: h = (r - g) / d + 4; break; }
+                h /= 6;
+            } return [h, s, l];
+        }
+        function hslToHex(h, s, l) {
+             const [r, g, b] = hslToRgb(h, s, l); const toHex = x => { const hex = x.toString(16); return hex.length == 1 ? '0' + hex : hex; }; return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        }
+        function hexToHsl(hex) {
+             const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i; hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex); if (!result) { return null; }
+             const r = parseInt(result[1], 16); const g = parseInt(result[2], 16); const b = parseInt(result[3], 16); return rgbToHsl(r, g, b);
+         }
+
+        // Helper function to wrap hue value between 0 and 1
+        function normalizeHue(h) {
+            return (h % 1 + 1) % 1; // Handles positive/negative results of modulo
+        }
+
+        function generatePalette(count = 5, baseColorHex = null, harmony = 'analogous') {
+            const newPalette = [];
+            let baseH, baseS, baseL;
+
+            // 1. Determine Base Color HSL
+            if (baseColorHex) {
+                const baseHsl = hexToHsl(baseColorHex);
+                if (baseHsl) {
+                    [baseH, baseS, baseL] = baseHsl;
+                    newPalette.push(baseColorHex); // Add base color first
+                } else {
+                    console.error("Invalid base color hex provided:", baseColorHex);
+                    baseColorHex = null; // Fallback to random if invalid
+                }
+            }
+
+            if (!baseColorHex) { // Generate random base if none provided or invalid
+                baseH = Math.random();
+                baseS = 0.5 + Math.random() * 0.5; // Saturation between 0.5 and 1.0
+                baseL = 0.4 + Math.random() * 0.3; // Lightness between 0.4 and 0.7
+                newPalette.push(hslToHex(baseH, baseS, baseL));
+            }
+
+            // 2. Generate Remaining Colors based on Harmony Scheme
+            const remainingCount = count - newPalette.length;
+            const saturationMin = 0.3;
+            const saturationMax = 1.0;
+            const lightnessMin = 0.2;
+            const lightnessMax = 0.9;
+
+            let targetHues = [];
+
+            switch (harmony) {
+                case 'monochromatic':
+                    // Keep hue the same, vary S/L more widely for contrast
+                    for (let i = 0; i < remainingCount; i++) {
+                        const h = baseH;
+                        // Vary S/L, maybe try to get distinct steps?
+                        const s = saturationMin + Math.random() * (saturationMax - saturationMin);
+                        // Try to get both lighter and darker shades
+                        const l = (i % 2 === 0)
+                            ? baseL + (Math.random() * (lightnessMax - baseL)) // Lighter
+                            : lightnessMin + (Math.random() * (baseL - lightnessMin)); // Darker
+                        newPalette.push(hslToHex(h, s, Math.max(lightnessMin, Math.min(lightnessMax, l)) ));
+                    }
+                    break; // Break needed here
+
+                case 'complementary':
+                    const complementaryH = normalizeHue(baseH + 0.5);
+                    targetHues = [baseH, complementaryH];
+                    // Fill remaining slots, alternating between base/complementary hue +/- slight variation
+                    for (let i = 0; i < remainingCount; i++) {
+                         const targetH = targetHues[i % 2];
+                         // Add slight hue variation to make it less rigid?
+                         const h = normalizeHue(targetH + (Math.random() - 0.5) * 0.05); // +/- 18 degrees
+                         const s = saturationMin + Math.random() * (saturationMax - saturationMin);
+                         const l = lightnessMin + Math.random() * (lightnessMax - lightnessMin);
+                         newPalette.push(hslToHex(h, s, l));
+                    }
+                    break; // Break needed here
+
+                 case 'split-complementary':
+                    const comp1 = normalizeHue(baseH + 150 / 360);
+                    const comp2 = normalizeHue(baseH + 210 / 360);
+                    targetHues = [baseH, comp1, comp2];
+                     for (let i = 0; i < remainingCount; i++) {
+                         const targetH = targetHues[i % targetHues.length];
+                         const h = normalizeHue(targetH + (Math.random() - 0.5) * 0.05); // Slight variation
+                         const s = saturationMin + Math.random() * (saturationMax - saturationMin);
+                         const l = lightnessMin + Math.random() * (lightnessMax - lightnessMin);
+                         newPalette.push(hslToHex(h, s, l));
+                     }
+                     break; // Break needed here
+
+                case 'triadic':
+                    const triad1 = normalizeHue(baseH + 120 / 360);
+                    const triad2 = normalizeHue(baseH + 240 / 360);
+                    targetHues = [baseH, triad1, triad2];
+                    for (let i = 0; i < remainingCount; i++) {
+                         const targetH = targetHues[i % targetHues.length];
+                         const h = normalizeHue(targetH + (Math.random() - 0.5) * 0.05); // Slight variation
+                         const s = saturationMin + Math.random() * (saturationMax - saturationMin);
+                         const l = lightnessMin + Math.random() * (lightnessMax - lightnessMin);
+                         newPalette.push(hslToHex(h, s, l));
+                     }
+                    break; // Break needed here
+
+                case 'random': // Completely random hues
+                     for (let i = 0; i < remainingCount; i++) {
+                         const h = Math.random(); // Any hue
+                         const s = saturationMin + Math.random() * (saturationMax - saturationMin);
+                         const l = lightnessMin + Math.random() * (lightnessMax - lightnessMin);
+                         newPalette.push(hslToHex(h, s, l));
+                     }
+                     break; // Break needed here
+
+                case 'analogous': // Default/Original logic (fall-through)
+                default:
+                    const hueVariance = 60 / 360; // Keep original variance for analogous
+                    for (let i = 0; i < remainingCount; i++) {
+                        let h = baseH + (Math.random() - 0.5) * 2 * hueVariance;
+                        h = normalizeHue(h); // Use normalize function
+
+                        const s = saturationMin + Math.random() * (saturationMax - saturationMin);
+                        const l = lightnessMin + Math.random() * (lightnessMax - lightnessMin);
+
+                        newPalette.push(hslToHex(h, s, l));
+                    }
+                    break; // Break needed here
+            }
+
+            // Ensure palette has exactly 'count' colors if somehow logic failed (e.g., duplicate generation)
+            // This is a fallback, ideally the loops above handle it.
+            while (newPalette.length < count) {
+                console.warn("Fallback: adding random color to meet count");
+                 const h = Math.random();
+                 const s = 0.5 + Math.random() * 0.5;
+                 const l = 0.4 + Math.random() * 0.3;
+                 const fallbackColor = hslToHex(h, s, l);
+                 if (!newPalette.includes(fallbackColor)) { // Avoid duplicates
+                     newPalette.push(fallbackColor);
+                 }
+            }
+
+            console.log("Generated palette before slice:", JSON.stringify(newPalette)); // DEBUG LINE
+            return newPalette.slice(0, count); // Ensure exactly count colors are returned
+        }
+
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.remove('opacity-0', 'translate-y-2');
+            notification.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                notification.classList.remove('opacity-100', 'translate-y-0');
+                notification.classList.add('opacity-0', 'translate-y-2');
+            }, 1500);
+        }
+
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showNotification(`Copied ${text}!`);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showNotification('Failed to copy!');
+            }
+        }
+
+        function displayPalette(colors) {
+            paletteContainer.innerHTML = '';
+            currentPalette = colors;
+
+            colors.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch flex-1 flex flex-col items-center justify-center text-center p-2 transition-all duration-200 ease-in-out hover:flex-grow-[1.2]';
+                swatch.style.backgroundColor = color;
+                swatch.setAttribute('title', `Click hex code to copy ${color}`);
+
+                const hexCodeSpan = document.createElement('span');
+                hexCodeSpan.textContent = color;
+                hexCodeSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    copyToClipboard(color);
+                });
+
+                swatch.appendChild(hexCodeSpan);
+                paletteContainer.appendChild(swatch);
+            });
+        }
+
+        function loadSavedPalettes() {
+            const saved = localStorage.getItem('savedColorPalettes');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function savePalettesToStorage(palettes) {
+            localStorage.setItem('savedColorPalettes', JSON.stringify(palettes));
+        }
+
+        function displaySavedPalettes() {
+            const savedPalettes = loadSavedPalettes();
+            savedPalettesContainer.innerHTML = '';
+
+            if (savedPalettes.length === 0) {
+                 const p = document.createElement('p');
+                 p.id = 'no-saved-palettes';
+                 p.className = 'text-gray-500 text-center italic';
+                 p.textContent = 'No palettes saved yet.';
+                 savedPalettesContainer.appendChild(p);
+                return;
+            }
+
+            const existingNoMsg = document.getElementById('no-saved-palettes');
+            if (existingNoMsg) existingNoMsg.style.display = 'none';
+
+            savedPalettes.forEach((palette, index) => {
+                const savedPaletteDiv = document.createElement('div');
+                savedPaletteDiv.className = 'saved-palette-item';
+
+                const swatchesContainer = document.createElement('div');
+                swatchesContainer.className = 'flex flex-wrap gap-2';
+
+                palette.forEach(color => {
+                    const unitDiv = document.createElement('div');
+                    unitDiv.className = 'saved-color-unit';
+                    unitDiv.setAttribute('title', `Click to copy ${color}`);
+                    unitDiv.addEventListener('click', () => copyToClipboard(color));
+
+                    const swatch = document.createElement('span');
+                    swatch.className = 'saved-swatch';
+                    swatch.style.backgroundColor = color;
+
+                    const hexCode = document.createElement('span');
+                    hexCode.className = 'saved-hex-code';
+                    hexCode.textContent = color;
+
+                    unitDiv.appendChild(swatch);
+                    unitDiv.appendChild(hexCode);
+                    swatchesContainer.appendChild(unitDiv);
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '&times;';
+                deleteButton.className = 'text-red-500 hover:text-red-700 font-bold text-xl px-2 leading-none rounded focus:outline-none focus:ring-1 focus:ring-red-400 ml-3 flex-shrink-0';
+                deleteButton.setAttribute('title', 'Delete this palette');
+                deleteButton.onclick = (e) => {
+                    e.stopPropagation();
+                    deletePalette(index);
+                };
+
+                savedPaletteDiv.appendChild(swatchesContainer);
+                savedPaletteDiv.appendChild(deleteButton);
+                savedPalettesContainer.appendChild(savedPaletteDiv);
+            });
+        }
+
+        function deletePalette(index) {
+            let savedPalettes = loadSavedPalettes();
+            savedPalettes.splice(index, 1);
+            savePalettesToStorage(savedPalettes);
+            displaySavedPalettes();
+            showNotification('Palette deleted.');
+        }
+
+        function saveCurrentPalette() {
+            if (!currentPalette || currentPalette.length === 0) {
+                showNotification('Generate a palette first!');
+                return;
+            }
+            const savedPalettes = loadSavedPalettes();
+            const isDuplicate = savedPalettes.some(p => JSON.stringify(p) === JSON.stringify(currentPalette));
+            if (isDuplicate) {
+                 showNotification('Palette already saved!');
+                 return;
+            }
+            savedPalettes.push(currentPalette);
+            savePalettesToStorage(savedPalettes);
+            displaySavedPalettes();
+            showNotification('Palette saved!');
+        }
+
+        generateBtn.addEventListener('click', () => {
+            const harmony = harmonySelect.value;
+            const newPalette = generatePalette(5, null, harmony);
+            displayPalette(newPalette);
+        });
+
+        generateFromBaseBtn.addEventListener('click', () => {
+            const baseColor = baseColorInput.value;
+            const harmony = harmonySelect.value;
+            const newPalette = generatePalette(5, baseColor, harmony);
+            displayPalette(newPalette);
+        });
+
+        saveBtn.addEventListener('click', saveCurrentPalette);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const harmony = harmonySelect.value;
+            const initialPalette = generatePalette(5, null, harmony);
+            displayPalette(initialPalette);
+            displaySavedPalettes();
+        });
+
+    </script>
+
+</body>
+</html>
+
