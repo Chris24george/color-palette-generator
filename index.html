@@ -115,12 +115,16 @@
 
         <div class="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <button id="generate-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 text-sm sm:text-base">
-                    🎲 Generate Random
-                </button>
-                <button id="save-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 text-sm sm:text-base">
-                    💾 Save Palette
-                </button>
+                <div class="p-[2px] rounded-xl bg-gradient-to-r from-blue-400 via-purple-400 to-blue-600">
+                    <button id="generate-btn" class="w-full bg-white/30 backdrop-blur-md border border-transparent text-gray-900 font-semibold py-3 px-4 sm:px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-40 text-base flex items-center gap-2">
+                        <span class="text-lg">🎲</span> <span>Generate Random</span>
+                    </button>
+                </div>
+                <div class="p-[2px] rounded-xl bg-gradient-to-r from-green-400 via-teal-400 to-green-600">
+                    <button id="save-btn" class="w-full bg-white/30 backdrop-blur-md border border-transparent text-gray-900 font-semibold py-3 px-4 sm:px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-opacity-40 text-base flex items-center gap-2">
+                        <span class="text-lg">💾</span> <span>Save Palette</span>
+                    </button>
+                </div>
             </div>
 
             <div class="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-3 sm:space-y-4">
@@ -144,9 +148,11 @@
                         <div class="flex-none">
                             <input type="color" id="base-color-input" value="#4A90E2" title="Choose base color" class="w-12 h-12 rounded-md cursor-pointer">
                         </div>
-                        <button id="generate-from-base-btn" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75 text-sm">
-                            Generate from Base Color
-                        </button>
+                        <div class="flex-1 p-[2px] rounded-xl bg-gradient-to-r from-indigo-400 via-pink-400 to-indigo-600">
+                            <button id="generate-from-base-btn" class="w-full bg-white/30 backdrop-blur-md border border-transparent text-gray-900 font-semibold py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-40 text-base flex items-center gap-2">
+                                <span>Generate from Base Color</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
